@@ -1333,8 +1333,12 @@ html{scroll-padding-top:74px}
   window.addEventListener('scroll', navTone, { passive: true });
   navTone();
 
-  // ---- Floating nav: detaches into a glass frame as soon as the page leaves the very top
-  function navFloat() { nav.classList.toggle('is-floating', window.scrollY > 24); }
+  // ---- Floating nav: stays a full-width bar over the whole hero scene and detaches into a glass frame only once the
+  // second section (#play) has fully replaced the hero, i.e. its top edge has reached the top of the viewport.
+  var playSection = $('#play');
+  function navFloat() {
+    nav.classList.toggle('is-floating', playSection ? playSection.getBoundingClientRect().top <= 1 : window.scrollY > 24);
+  }
   window.addEventListener('scroll', navFloat, { passive: true });
   navFloat();
 
@@ -1574,7 +1578,11 @@ html{scroll-padding-top:74px}
       var last = shown.length - 1, dur = last > 1 ? 0.45 : 0.6, step = last > 1 ? 0.4 / (last - 1) : 0;
       var firstTop = edge;
       shown.forEach(function (c, i) {
-        var top = i === last ? edge : Math.min(edge, h * (1 - easeOut(clamp01((progress - i * step) / dur))));
+        // A column that has not started yet rests flush with #play's edge and simply travels with it (off screen during
+        // the hero scene). Holding it at the viewport's bottom instead would re-place it every frame, and native scroll
+        // runs a frame ahead of that, so it would flicker at the bottom edge.
+        var p = (progress - i * step) / dur;
+        var top = i === last || p <= 0 ? edge : Math.min(edge, h * (1 - easeOut(clamp01(p))));
         if (!i) firstTop = top;
         c.style.transform = 'translate3d(0,' + (h - (edge - top)).toFixed(1) + 'px,0)';
       });
