@@ -1393,6 +1393,8 @@ html{scroll-padding-top:74px}
     var W = 0, H = 0, cols = 0, rows = 0, field = new Float32Array(0);
     var host = null, target = { x: 0, y: 0 }, pos = { x: 0, y: 0 }, trail = [], energy = 0, alpha = 0;
     var running = false, last = 0, raf = 0, dirty = null;
+    // Controls the trail must never draw over: it is clipped out of their boxes (plus a 3px margin).
+    var CONTROLS = 'button,.btn,[role=tab],input,textarea,select,.topic-trigger,.arrow', controls = [];
     function resize() {
       var dpr = Math.min(window.devicePixelRatio || 1, 2);
       W = window.innerWidth; H = window.innerHeight;
@@ -1473,16 +1475,23 @@ html{scroll-padding-top:74px}
           ctx.fillText(set[hash(x, y, tick + level, set.length)], CELL * x + CELL / 2, CELL * y + CELL / 2);
         }
       }
+      // Wipe the trail out of every visible control's box (plus a 3px margin), so tabs, buttons and fields stay clean.
+      for (var q = 0; q < controls.length; q++) {
+        var cr = controls[q].getBoundingClientRect();
+        if (!cr.width || !cr.height || cr.bottom < 0 || cr.top > H) continue;
+        ctx.clearRect(cr.left - 3, cr.top - 3, cr.width + 6, cr.height + 6);
+      }
       ctx.restore();
     }
     window.addEventListener('pointermove', function (e) {
       if (e.pointerType !== 'mouse') return;
-      // Every plain section hosts the trail; the hero (video) and the talk form (photo backdrop) do not.
-      var next = e.target.closest ? e.target.closest('main section:not(.hero):not(.talk), footer.dark') : null;
-      if (!next) return; // over the hero or a photo backdrop: let the trail fade out where it is
+      // Every section hosts the trail except the hero (video).
+      var next = e.target.closest ? e.target.closest('main section:not(.hero), footer.dark') : null;
+      if (!next) return; // over the hero: let the trail fade out where it is
       if (next !== host) {
         if (dirty) { ctx.clearRect(dirty.x, dirty.y, dirty.w, dirty.h); dirty = null; }
         host = next;
+        controls = $$(CONTROLS, host);
         // Pick the ramp from the section's actual background (a transparent one sits on the paper page).
         var bg = (getComputedStyle(host).backgroundColor.match(/[\d.]+/g) || []).map(Number);
         if (bg.length < 3 || bg[3] === 0) theme = 'light';
