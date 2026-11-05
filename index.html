@@ -743,6 +743,17 @@ html{scroll-padding-top:74px}
 /* Events: a 4:3 frame instead of a 2:1 strip; the option grid stretches to the same height. */
 .event-feature .media[data-zoom]{min-height:0;aspect-ratio:4/3}
 @media(max-width:760px){#play .media{min-height:330px}.panel .media[data-zoom],.event-feature .media[data-zoom]{aspect-ratio:4/5}}
+/* Shorter sections: the first-visit tabs use a 4:3 frame, the events feature a 3:2 frame, and four coaches share a
+   row on desktop (two on tablets), so none of them needs a long scroll. */
+.panel .media[data-zoom]{aspect-ratio:4/3}
+.event-feature .media[data-zoom]{aspect-ratio:3/2}
+.coach-track .card{flex-basis:calc((100% - 72px)/4)}
+@media(max-width:1000px){.coach-track .card{flex-basis:calc((100% - 24px)/2)}}
+@media(max-width:760px){
+  .panel .media[data-zoom],.event-feature .media[data-zoom]{aspect-ratio:1/1}
+  .coach-track .card{flex-basis:72%}
+  #coaches .media[data-zoom]{aspect-ratio:1/1}
+}
 .card:hover .media[data-zoom] img,.card:focus-within .media[data-zoom] img,.panel:hover .media[data-zoom] img,.event-feature:hover .media[data-zoom] img,.media[data-zoom]:hover img,.media[data-zoom].is-active img{filter:grayscale(0)}
 /* Overlays inside a photo frame (the FAQ help card) sit above the image. */
 .media[data-zoom]>:not(img){position:relative;z-index:1}
@@ -937,7 +948,7 @@ html{scroll-padding-top:74px}
 <div class="faq-left">
 <h2 class="lt"><span class="text-line"><span class="text-line-inner">A little clarity.</span></span><span class="text-line"><span class="text-line-inner li1">Then let’s play.</span></span></h2>
 <p class="faq-intro lt"><span class="text-line"><span class="text-line-inner">Everything you need to know about visiting PULSE, booking a court, training and memberships.</span></span></p>
-<div class="media faq-media" data-glyph-photo="assets/photos/faq-rackets.jpg" data-glyph-fit="right">
+<div class="media faq-media" data-glyph-photo="court" data-glyph-fit="right">
 <div class="faq-help">
 <h3>Still have questions?</h3>
 <p>We’re here to help. Reach out and our team will get back to you.</p>
@@ -1161,6 +1172,13 @@ html{scroll-padding-top:74px}
   }
   $('#coach-prev').addEventListener('click', function () { scrollCoaches(-1); });
   $('#coach-next').addEventListener('click', function () { scrollCoaches(1); });
+  // When every coach fits in the row (desktop shows all four), the arrows have nothing to do, so they step aside.
+  (function coachArrows() {
+    var track = $('#coach-track'), controls = $('.coach-controls');
+    function sync() { controls.style.visibility = track.scrollWidth > track.clientWidth + 2 ? '' : 'hidden'; }
+    window.addEventListener('resize', sync);
+    sync();
+  })();
 
   // ---- Notice dialog
   var dialog = $('#pulse-notice');
@@ -1362,8 +1380,8 @@ html{scroll-padding-top:74px}
     document.documentElement.classList.add('has-liquid-glass');
   })();
 
-  // ---- Glyph trail on dark sections: the cursor leaves a fading field of dots in court blue and lime.
-  // One fixed canvas moves into the dark section under the cursor, behind its content, and is clipped to it.
+  // ---- Glyph trail: the cursor leaves a fading field of dots, coloured for the section's background (dark, paper, lime).
+  // One fixed canvas moves into the section under the cursor, behind its content, and is clipped to it.
   (function glyphTrail() {
     if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches || reduceMQ.matches) return;
     var canvas = document.createElement('canvas'), ctx = canvas.getContext('2d');
@@ -1386,7 +1404,23 @@ html{scroll-padding-top:74px}
       dirty = null;
     }
     function hash(a, b, c, n) { var h = 0x466f45d * a ^ 0x127409f * b ^ 0x4f9ffb7 * c; return ((h ^ h >>> 13) >>> 0) % n; }
+    // Each background gets its own ramp from a soft edge to a strong core. Dark sections glow (added light); paper and
+    // lime sections are painted normally, so their glyphs darken toward ink instead — lime would vanish on both.
+    var theme = 'dark';
     function colour(v) {
+      // Painted ramps stay lighter than the dark glow: they would otherwise sit on top of nearby copy as solid ink.
+      if (theme === 'lime') {
+        if (v > 0.86) return 'rgba(27, 44, 94, ' + (0.3 + 0.3 * v) + ')';      // deep navy core
+        if (v > 0.58) return 'rgba(47, 86, 176, ' + (0.2 + 0.35 * v) + ')';    // court blue
+        if (v > 0.28) return 'rgba(92, 116, 16, ' + (0.12 + 0.4 * v) + ')';    // olive
+        return 'rgba(120, 146, 20, ' + (0.08 + 0.5 * v) + ')';                 // pale olive edge
+      }
+      if (theme === 'light') {
+        if (v > 0.86) return 'rgba(27, 44, 94, ' + (0.28 + 0.3 * v) + ')';     // deep navy core
+        if (v > 0.58) return 'rgba(53, 97, 196, ' + (0.2 + 0.35 * v) + ')';    // court blue
+        if (v > 0.28) return 'rgba(110, 150, 226, ' + (0.15 + 0.4 * v) + ')';  // pale blue
+        return 'rgba(150, 180, 236, ' + (0.08 + 0.5 * v) + ')';                // faint blue edge
+      }
       if (v > 0.86) return 'rgba(240, 251, 178, ' + (0.7 + 0.3 * v) + ')';   // lime-white core
       if (v > 0.58) return 'rgba(210, 239, 48, ' + (0.35 + 0.6 * v) + ')';  // PULSE lime
       if (v > 0.28) return 'rgba(74, 122, 214, ' + (0.12 + 0.85 * v) + ')'; // court blue
@@ -1425,7 +1459,7 @@ html{scroll-padding-top:74px}
       var box = host.getBoundingClientRect(), tick = Math.floor(now / 320);
       ctx.save();
       ctx.beginPath(); ctx.rect(box.left, box.top, box.width, box.height); ctx.clip();
-      ctx.globalCompositeOperation = 'lighter';
+      ctx.globalCompositeOperation = theme === 'dark' ? 'lighter' : 'source-over';
       ctx.globalAlpha = alpha;
       for (var y = r0; y <= r1; y++) {
         for (var x = c0; x <= c1; x++) {
@@ -1443,11 +1477,17 @@ html{scroll-padding-top:74px}
     }
     window.addEventListener('pointermove', function (e) {
       if (e.pointerType !== 'mouse') return;
-      var next = e.target.closest ? e.target.closest('section.dark, footer.dark') : null;
-      if (!next) return; // over a light section: let the trail fade out where it is
+      // Every plain section hosts the trail; the hero (video) and the talk form (photo backdrop) do not.
+      var next = e.target.closest ? e.target.closest('main section:not(.hero):not(.talk), footer.dark') : null;
+      if (!next) return; // over the hero or a photo backdrop: let the trail fade out where it is
       if (next !== host) {
         if (dirty) { ctx.clearRect(dirty.x, dirty.y, dirty.w, dirty.h); dirty = null; }
         host = next;
+        // Pick the ramp from the section's actual background (a transparent one sits on the paper page).
+        var bg = (getComputedStyle(host).backgroundColor.match(/[\d.]+/g) || []).map(Number);
+        if (bg.length < 3 || bg[3] === 0) theme = 'light';
+        else if (0.2126 * bg[0] + 0.7152 * bg[1] + 0.0722 * bg[2] < 90) theme = 'dark';
+        else theme = bg[1] - bg[2] > 90 ? 'lime' : 'light';
         host.insertBefore(canvas, host.firstChild);
         trail.length = 0;
         pos.x = e.clientX; pos.y = e.clientY;
@@ -1594,9 +1634,59 @@ html{scroll-padding-top:74px}
       frame.insertBefore(canvas, frame.firstChild);
       var CELL = 10, GLYPHS = ['.', '·', '•', 'o'], RADIUS = 90;
       var cells = [], W = 0, H = 0, pointer = null, raf = 0, sizeKey = '';
-      var photo = new Image();
+      // data-glyph-photo="court" draws a padel court instead of sampling a photo.
+      var isCourt = frame.dataset.glyphPhoto === 'court', photo = new Image();
       photo.decoding = 'async';
-      photo.src = frame.dataset.glyphPhoto;
+      if (!isCourt) photo.src = frame.dataset.glyphPhoto;
+      // A padel court (20 m × 10 m) in gentle perspective, drawn large and then averaged down to one pixel per cell:
+      // dim court-blue surface, bright boundary and service lines, a lime net with posts. Brightness picks the glyph.
+      function drawCourt(o, cols, rows, right) {
+        var S = 4, big = document.createElement('canvas'), b = big.getContext('2d');
+        big.width = cols * S; big.height = rows * S;
+        var bw = big.width, bh = big.height;
+        // Seen from behind the near baseline, the court recedes up the frame: wide near edge at the bottom, narrow far
+        // baseline and its glass back wall at the top. It fills 84% of the frame height; "right" keeps it in the right
+        // half, clear of the copy; otherwise it is centred.
+        var ch = bh * 0.84, halfNear = Math.min((right ? bw * 0.5 : bw * 0.92) / 2 - S * 3, ch * 0.6);
+        var cx = right ? bw - S * 4 - halfNear : bw / 2, y1 = bh - bh * 0.06, y0 = y1 - ch, wallH = ch * 0.17;
+        // u: 0…10 m across (left → right), v: 0…20 m along (far baseline → near baseline). Far rows shrink and bunch up.
+        function P(u, v) {
+          var t = v / 20, sc = 0.42 + 0.58 * t;
+          return [cx + (u - 5) / 5 * halfNear * sc, y0 + wallH + (ch - wallH) * (t / (1.7 - 0.7 * t))];
+        }
+        function up(p, h, v) { return [p[0], p[1] - h * (0.42 + 0.58 * v / 20)]; }
+        function line(a, c, w, shade) {
+          b.strokeStyle = shade; b.lineWidth = w * S; b.lineCap = 'square';
+          b.beginPath(); b.moveTo(a[0], a[1]); b.lineTo(c[0], c[1]); b.stroke();
+        }
+        function poly(pts, fill) {
+          b.fillStyle = fill; b.beginPath();
+          pts.forEach(function (p, i) { b[i ? 'lineTo' : 'moveTo'](p[0], p[1]); });
+          b.closePath(); b.fill();
+        }
+        // Back glass wall (faint) and the court surface (court blue).
+        var bl = P(0, 0), br = P(10, 0), wh = wallH / 0.42;
+        poly([bl, br, up(br, wh, 0), up(bl, wh, 0)], 'rgb(45,45,45)');
+        poly([P(0, 0), P(10, 0), P(10, 20), P(0, 20)], 'rgb(80,80,80)');
+        var white = 'rgb(255,255,255)', w = 1.05, glass = 'rgb(150,150,150)';
+        line(up(bl, wh, 0), up(br, wh, 0), 0.8, glass); line(bl, up(bl, wh, 0), 0.8, glass); line(br, up(br, wh, 0), 0.8, glass);
+        // Boundary, service lines 6.95 m either side of the net, and the centre service line between them.
+        line(P(0, 0), P(10, 0), w, white); line(P(10, 0), P(10, 20), w, white);
+        line(P(10, 20), P(0, 20), w, white); line(P(0, 20), P(0, 0), w, white);
+        line(P(0, 3.05), P(10, 3.05), w, white); line(P(0, 16.95), P(10, 16.95), w, white);
+        line(P(5, 3.05), P(5, 16.95), w, white);
+        // Net: a lime band across the middle, standing up off the court, with posts just outside the side lines.
+        var nl = P(-0.3, 10), nr = P(10.3, 10), nh = ch * 0.1;
+        poly([nl, nr, up(nr, nh, 10), up(nl, nh, 10)], 'rgb(178,178,178)');
+        line(up(nl, nh, 10), up(nr, nh, 10), 1, white);
+        line(nl, up(nl, nh * 1.1, 10), 1.1, white); line(nr, up(nr, nh * 1.1, 10), 1.1, white);
+        // Average down in two halvings so thin lines become partly lit cells rather than vanishing.
+        var mid = document.createElement('canvas'), m = mid.getContext('2d');
+        mid.width = cols * 2; mid.height = rows * 2;
+        m.imageSmoothingEnabled = o.imageSmoothingEnabled = true;
+        m.drawImage(big, 0, 0, mid.width, mid.height);
+        o.drawImage(mid, 0, 0, cols, rows);
+      }
       function colour(v) {
         if (v > 0.84) return 'rgba(240, 251, 178, ' + (0.75 + 0.25 * v).toFixed(2) + ')';
         if (v > 0.58) return 'rgba(210, 239, 48, ' + (0.45 + 0.5 * v).toFixed(2) + ')';
@@ -1605,7 +1695,7 @@ html{scroll-padding-top:74px}
       }
       function sample() {
         W = frame.clientWidth; H = frame.clientHeight;
-        if (!W || !H || !photo.naturalWidth || sizeKey === W + 'x' + H) return;
+        if (!W || !H || (!isCourt && !photo.naturalWidth) || sizeKey === W + 'x' + H) return;
         sizeKey = W + 'x' + H;
         var dpr = Math.min(window.devicePixelRatio || 1, 2);
         canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
@@ -1616,25 +1706,34 @@ html{scroll-padding-top:74px}
         // side (under the copy) empty; otherwise it is cover-fitted and centred.
         var cols = Math.ceil(W / CELL), rows = Math.ceil(H / CELL), off = document.createElement('canvas'), o = off.getContext('2d');
         off.width = cols; off.height = rows;
-        var right = frame.dataset.glyphFit === 'right' && W > 520;
-        var s = right ? rows * 1.08 / photo.naturalHeight : Math.max(cols / photo.naturalWidth, rows / photo.naturalHeight);
-        var dw = photo.naturalWidth * s, dh = photo.naturalHeight * s;
-        o.drawImage(photo, right ? cols - dw : (cols - dw) / 2, (rows - dh) / 2, dw, dh);
+        var right = frame.dataset.glyphFit === 'right' && W > 520, dw = cols;
+        if (isCourt) drawCourt(o, cols, rows, right);
+        else {
+          var s = right ? rows * 1.08 / photo.naturalHeight : Math.max(cols / photo.naturalWidth, rows / photo.naturalHeight);
+          dw = photo.naturalWidth * s;
+          var dh = photo.naturalHeight * s;
+          o.drawImage(photo, right ? cols - dw : (cols - dw) / 2, (rows - dh) / 2, dw, dh);
+        }
         var px = o.getImageData(0, 0, cols, rows).data, lums = new Float32Array(cols * rows), seen = [];
         for (var k = 0; k < lums.length; k++) {
-          lums[k] = px[k * 4 + 3] < 128 ? -1 : (0.2126 * px[k * 4] + 0.7152 * px[k * 4 + 1] + 0.0722 * px[k * 4 + 2]) / 255;
+          var a = px[k * 4 + 3];
+          // The court is drawn on transparency, so its anti-aliased edges count by coverage instead of being cut.
+          lums[k] = a < (isCourt ? 24 : 128) ? -1 : (0.2126 * px[k * 4] + 0.7152 * px[k * 4 + 1] + 0.0722 * px[k * 4 + 2]) / 255 * (isCourt ? a / 255 : 1);
           if (lums[k] >= 0) seen.push(lums[k]);
         }
         // Auto-levels: stretch the photo's own 4th–97th percentile to the full range, so any photo reads clearly.
+        // The drawn court already spans the range on purpose.
         var sorted = seen.sort(function (a, b) { return a - b; });
-        var lo = sorted[Math.floor(sorted.length * 0.04)], hi = sorted[Math.floor(sorted.length * 0.97)], span = Math.max(hi - lo, 0.05);
+        var lo = isCourt ? 0 : sorted[Math.floor(sorted.length * 0.04)], hi = isCourt ? 1 : sorted[Math.floor(sorted.length * 0.97)], span = Math.max(hi - lo, 0.05);
         cells = [];
         for (var r = 0; r < rows; r++) {
           for (var c = 0; c < cols; c++) {
             if (lums[r * cols + c] < 0) continue;
             // The photo's own left edge fades over six cells instead of ending in a hard column.
-            var edgeFade = right ? Math.min(1, Math.max(0, (c - (cols - dw)) / 6)) : 1;
+            var edgeFade = right && !isCourt ? Math.min(1, Math.max(0, (c - (cols - dw)) / 6)) : 1;
             var v = Math.pow(Math.min(1, Math.max(0, (lums[r * cols + c] - lo) / span)), 0.85) * edgeFade;
+            // On narrow frames the court sits under the copy, so it stays a quiet backdrop there.
+            if (isCourt && !right) v *= 0.42;
             if (v < 0.06) continue;
             cells.push({ x: c * CELL + CELL / 2, y: r * CELL + CELL / 2, v: v, dx: 0, dy: 0, boost: 0 });
           }
@@ -1668,7 +1767,7 @@ html{scroll-padding-top:74px}
       }
       function wake() { if (!raf) raf = requestAnimationFrame(step); }
       photo.addEventListener('load', sample);
-      if (photo.complete) sample();
+      if (isCourt || photo.complete) sample();
       if ('ResizeObserver' in window) new ResizeObserver(function () { sample(); }).observe(frame);
       else window.addEventListener('resize', sample);
       if (reduceMQ.matches) return;
