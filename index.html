@@ -1408,18 +1408,18 @@ html{scroll-padding-top:74px}
     // lime sections are painted normally, so their glyphs darken toward ink instead — lime would vanish on both.
     var theme = 'dark';
     function colour(v) {
-      // Painted ramps stay lighter than the dark glow: they would otherwise sit on top of nearby copy as solid ink.
+      // Painted ramps use the same opacity curve as the dark glow, so the trail reads equally strong on every background.
       if (theme === 'lime') {
-        if (v > 0.86) return 'rgba(27, 44, 94, ' + (0.3 + 0.3 * v) + ')';      // deep navy core
-        if (v > 0.58) return 'rgba(47, 86, 176, ' + (0.2 + 0.35 * v) + ')';    // court blue
-        if (v > 0.28) return 'rgba(92, 116, 16, ' + (0.12 + 0.4 * v) + ')';    // olive
-        return 'rgba(120, 146, 20, ' + (0.08 + 0.5 * v) + ')';                 // pale olive edge
+        if (v > 0.86) return 'rgba(20, 30, 72, ' + (0.7 + 0.3 * v) + ')';     // navy-ink core
+        if (v > 0.58) return 'rgba(40, 76, 170, ' + (0.35 + 0.6 * v) + ')';   // court blue
+        if (v > 0.28) return 'rgba(74, 96, 12, ' + (0.12 + 0.85 * v) + ')';   // olive
+        return 'rgba(98, 124, 16, ' + (0.1 + 0.9 * v) + ')';                  // olive edge
       }
       if (theme === 'light') {
-        if (v > 0.86) return 'rgba(27, 44, 94, ' + (0.28 + 0.3 * v) + ')';     // deep navy core
-        if (v > 0.58) return 'rgba(53, 97, 196, ' + (0.2 + 0.35 * v) + ')';    // court blue
-        if (v > 0.28) return 'rgba(110, 150, 226, ' + (0.15 + 0.4 * v) + ')';  // pale blue
-        return 'rgba(150, 180, 236, ' + (0.08 + 0.5 * v) + ')';                // faint blue edge
+        if (v > 0.86) return 'rgba(20, 32, 80, ' + (0.7 + 0.3 * v) + ')';     // navy core
+        if (v > 0.58) return 'rgba(45, 88, 190, ' + (0.35 + 0.6 * v) + ')';   // court blue
+        if (v > 0.28) return 'rgba(84, 130, 218, ' + (0.12 + 0.85 * v) + ')'; // mid blue
+        return 'rgba(120, 158, 228, ' + (0.1 + 0.9 * v) + ')';                // pale blue edge
       }
       if (v > 0.86) return 'rgba(240, 251, 178, ' + (0.7 + 0.3 * v) + ')';   // lime-white core
       if (v > 0.58) return 'rgba(210, 239, 48, ' + (0.35 + 0.6 * v) + ')';  // PULSE lime
