@@ -636,24 +636,22 @@ html{scroll-padding-top:74px}
 .hero-pin.is-static .hero{position:relative}
 .hero-pin.is-static .hero-curtain{display:none}
 .hero-pin #play{z-index:1;background:var(--paper)}
-.hero-media{position:absolute;inset:0;z-index:-2;overflow:hidden;container-type:size;background:var(--ink)}
-/* One fitting rule for every layer. The player spans 15.4%–92.7% of the canvas height, so the stage is never taller than
-   what fits that figure between the highlights row (--head-clear) and the bottom edge (--feet-gap). On screens wider
-   than 7:4 that stops it short of full cover; the stage then hugs the right edge and its top and left edges dissolve
-   into the ink (the left side already sits under the text gradient). */
-.hero-stage{--head-clear:204px;--feet-gap:14px;--player-x:.77;--stage-w:min(max(100cqw + 16px,100cqh*1.75),(100cqh - var(--head-clear) - var(--feet-gap))/.773*1.75);--stage-h:calc(var(--stage-w)/1.75);position:absolute;width:var(--stage-w);height:var(--stage-h);left:clamp(100cqw - var(--stage-w) + 8px,min(100cqw*var(--player-x) - var(--stage-w)*.75,100cqw - 16px - var(--stage-w)*.857),-8px);top:calc(100cqh - var(--feet-gap) - var(--stage-h)*.927);-webkit-mask-image:linear-gradient(180deg,transparent 0,#000 13%),linear-gradient(90deg,transparent 0,#000 16%);-webkit-mask-composite:source-in;mask-image:linear-gradient(180deg,transparent 0,#000 13%),linear-gradient(90deg,transparent 0,#000 16%);mask-composite:intersect}
+.hero-media{position:absolute;inset:0;z-index:-2;overflow:hidden;container-type:size;background:#0a0a0a}
+/* One fitting rule for the hero video (1344×768, 7:4, shown unscaled in ratio). The player spans 2%–92% of the frame
+   height, so the stage is never taller than what fits that figure between the highlights row (--head-clear) and the
+   bottom edge (--feet-gap): his head always lands below the navigation and the highlights. Above the stage the hero is
+   plain #0a0a0a; the stage's top edge (and its left edge on screens wider than 7:4) dissolves into it through an eased
+   mask, so there is no line where the dark ends and the video begins. */
+.hero-stage{--head-clear:204px;--feet-gap:14px;--player-x:.77;--stage-w:min(max(100cqw + 16px,100cqh*1.75),(100cqh - var(--head-clear) - var(--feet-gap))/.9*1.75);--stage-h:calc(var(--stage-w)/1.75);position:absolute;width:var(--stage-w);height:var(--stage-h);left:clamp(100cqw - var(--stage-w) + 8px,min(100cqw*var(--player-x) - var(--stage-w)*.7,100cqw - 16px - var(--stage-w)*.88),-8px);top:calc(100cqh - var(--feet-gap) - var(--stage-h)*.92);--fade-top:linear-gradient(180deg,#0000 0,#0000001f 1%,#0000005c 2.5%,#000000a6 4.5%,#000000e0 7%,#000 10%);--fade-left:linear-gradient(90deg,#0000 0,#00000040 4%,#000000b3 10%,#000 18%);-webkit-mask-image:var(--fade-top),var(--fade-left);-webkit-mask-composite:source-in;mask-image:var(--fade-top),var(--fade-left);mask-composite:intersect;opacity:0;transition:opacity .6s ease}
+.hero.scene-ready .hero-stage{opacity:1}
 .hero-layer{position:absolute;inset:0;display:block;width:100%;height:100%;max-width:none;object-fit:fill}
-/* Stage stack: a poster (frame 01, or frame 15 when there is no scene) under the scroll keyframes. */
-/* Scroll-scrubbed keyframes: JS sets each frame's opacity from scroll progress; nothing here animates over time,
-   except the one-off fade-in once every frame is decoded. */
-.hero-scrub{position:absolute;inset:0;opacity:0;transition:opacity .3s ease}
-.hero.scene-ready .hero-scrub{opacity:1}
-.hero-scrub img{position:absolute;inset:0;width:100%;height:100%;max-width:none;object-fit:fill;opacity:0}
 /* The scroll distance the pinned hero spends on the scene, then a hold on the last frame before #play slides over it. */
 .hero-scrub-span{height:170svh}
 .hero-scrub-hold{height:80svh}
 .hero-pin.is-static .hero-scrub-runway,.hero-pin.no-scene .hero-scrub-runway{display:none}
-.hero:before{background:linear-gradient(180deg,#10130fa6 0,#10130f00 24%),linear-gradient(90deg,#10130fd9 0,#10130f8c 30%,#10130f00 58%),linear-gradient(0deg,#10130f8c 0,#10130f00 26%)}
+/* Top: near-black behind the navigation (solid enough for the links up to ~110px), then an eased fade that is almost
+   gone by the time the player's head appears, so the overlay never dims his face. */
+.hero:before{background:linear-gradient(180deg,#0a0a0af2 0,#0a0a0ae6 72px,#0a0a0acc 110px,#0a0a0a8c 150px,#0a0a0a4d 190px,#0a0a0a24 240px,#0a0a0a0d 300px,#0a0a0a00 380px),linear-gradient(90deg,#10130fd9 0,#10130f8c 30%,#10130f00 58%),linear-gradient(0deg,#10130f8c 0,#10130f00 26%)}
 .hero .actions{position:static;margin-top:4px;max-width:none}
 .hero-info .label{color:var(--accent)}
 /* Hover states on dark surfaces follow the wireframe's .dark buttons: lime → paper, outline → lime outline. */
@@ -665,14 +663,16 @@ html{scroll-padding-top:74px}
 @media(max-width:760px){
   .hero-curtain{--curtain-cols:2}
   .hero-curtain span:nth-child(n+3){display:none}
-  .hero-stage{--stage-w:max(100cqw*1.5,560px);--player-x:.66;top:calc(100cqh*.5 - var(--stage-h)*.62);-webkit-mask-image:linear-gradient(180deg,transparent 0,#000 24%,#000 82%,transparent 100%);mask-image:linear-gradient(180deg,transparent 0,#000 24%,#000 82%,transparent 100%)}
-  .hero:before{background:linear-gradient(180deg,#10130f99 0,#10130f00 30%),linear-gradient(0deg,#10130ff2 0,#10130fcc 30%,#10130f00 52%)}
+  /* Phones: the highlights take two rows (down to ~230px), so the head clears 248px; the player sits slightly right of
+     centre and the text gradient carries the lower part of the frame. */
+  .hero-stage{--head-clear:248px;--stage-h:min(100cqh*.56,(100cqh - var(--head-clear))*.86);--stage-w:calc(var(--stage-h)*1.75);left:calc(100cqw*.6 - var(--stage-w)*.7);top:calc(var(--head-clear) - var(--stage-h)*.02);-webkit-mask-image:var(--fade-top),linear-gradient(0deg,#0000 0,#000 22%);mask-image:var(--fade-top),linear-gradient(0deg,#0000 0,#000 22%)}
+  .hero:before{background:linear-gradient(180deg,#0a0a0af2 0,#0a0a0ae0 64px,#0a0a0aa6 110px,#0a0a0a59 160px,#0a0a0a1f 210px,#0a0a0a00 280px),linear-gradient(0deg,#10130ff2 0,#10130fcc 30%,#10130f00 52%)}
   .hero-scrub-span{height:120svh}
   .hero-scrub-hold{height:60svh}
 }
 @media(prefers-reduced-motion:reduce){
   .hero-pin .hero{position:relative}
-  .hero-curtain,.hero-scrub,.hero-scrub-runway{display:none}
+  .hero-curtain,.hero-scrub-runway{display:none}
 }
 
 /* Navigation: a full-width bar over the top of the hero; once the page scrolls it detaches into a floating glass frame.
@@ -790,8 +790,7 @@ html{scroll-padding-top:74px}
 <section class="hero">
 <div class="hero-media" aria-hidden="true">
 <div class="hero-stage">
-<img class="hero-layer hero-poster" src="assets/hero/scroll/frame-01.jpg" alt="" width="420" height="240" fetchpriority="high">
-<div class="hero-scrub"></div>
+<video class="hero-layer hero-video" muted playsinline preload="auto" disablepictureinpicture disableremoteplayback tabindex="-1" width="1344" height="768"></video>
 </div>
 </div>
 
@@ -1461,61 +1460,54 @@ html{scroll-padding-top:74px}
     resize();
   })();
 
-  // ---- Hero scene: driven entirely by scroll. While the pinned hero sits over its runway, scroll progress picks a
-  // position along frame-01 … frame-15; the scene ends and rests on frame 15.
-  // Each step crossfades only in the middle of its span, so a clean keyframe shows most of the time. Nothing runs on
-  // its own: when scrolling stops the scene stops, and scrolling back plays it in reverse.
+  // ---- Hero scene: the original video (assets/hero/hero.mp4, untouched) scrubbed by scroll. While the pinned hero sits
+  // over its runway, scroll progress picks a time in the clip; it never plays on its own, so when scrolling stops the
+  // scene stops and scrolling back plays it in reverse. The file is loaded whole into memory first, so seeks don't wait
+  // on the network; the shown time eases toward the scroll target and only one seek is in flight at a time.
   var hero = $('.hero');
   (function heroScene() {
-    var pin = $('.hero-pin'), sceneSpan = $('.hero-scrub-span'), scrub = $('.hero-scrub', hero), poster = $('.hero-poster', hero);
-    function decoded(img) {
-      if (img.decode) return img.decode();
-      return img.complete && img.naturalWidth ? Promise.resolve() : new Promise(function (res, rej) { img.onload = res; img.onerror = rej; });
-    }
-    // Without the scene the hero rests on its last keyframe, the player back in his ready stance.
-    function staticLastFrame() { pin.classList.add('no-scene'); poster.src = 'assets/hero/scroll/frame-15.jpg'; }
-
-    if (reduceMQ.matches) { staticLastFrame(); return; }
-    var FRAMES = 15, frames = [];
-    for (var n = 1; n <= FRAMES; n++) {
-      var img = new Image();
-      img.alt = ''; img.decoding = 'async';
-      img.src = 'assets/hero/scroll/frame-' + (n < 10 ? '0' : '') + n + '.jpg';
-      scrub.appendChild(img);
-      frames.push(img);
-    }
-    var ready = false, raf = 0;
+    var pin = $('.hero-pin'), sceneSpan = $('.hero-scrub-span'), video = $('.hero-video', hero), SRC = 'assets/hero/hero.mp4';
+    if (!video) return;
+    var ready = false, raf = 0, shown = 0, target = 0, end = 0;
     function clamp01(v) { return Math.min(Math.max(v, 0), 1); }
-    function smooth(a, b, x) { var t = clamp01((x - a) / (b - a)); return t * t * (3 - 2 * t); }
-    function render() {
+    function progress() {
+      var span = sceneSpan.offsetHeight;
+      return span && !pin.classList.contains('no-scene') ? clamp01(-pin.getBoundingClientRect().top / span) : 1;
+    }
+    function seek() {
+      if (!video.seeking && Math.abs(video.currentTime - shown) > 0.004) video.currentTime = shown;
+    }
+    function tick() {
       raf = 0;
       if (!ready) return;
-      // The scene uses only the first part of the runway; the rest holds the last frame before #play slides in.
-      var span = sceneSpan.offsetHeight;
-      // Positions 0…14 are the keyframes; the scene ends and rests on frame 15. Between two keyframes only the middle
-      // 40% blends.
-      var last = FRAMES - 1;
-      var pos = span ? clamp01(-pin.getBoundingClientRect().top / span) * last : last;
-      var i = Math.min(Math.floor(pos), last), t = smooth(0.3, 0.7, pos - i);
-      for (var k = 0; k < FRAMES; k++) {
-        var o = 0;
-        if (k === i) o = 1;
-        else if (k === i + 1) o = t;
-        if (frames[k]._o !== o) { frames[k].style.opacity = o; frames[k]._o = o; }
-      }
+      target = progress() * end;
+      var d = target - shown;
+      shown = Math.abs(d) < 0.01 ? target : shown + d * 0.22;
+      seek();
+      if (shown !== target || video.seeking) raf = requestAnimationFrame(tick);
     }
-    function schedule() { if (!raf) raf = requestAnimationFrame(render); }
-    // Every keyframe must be decoded before the scene takes over; until then (or if any fails) the still shows.
-    Promise.all(frames.map(decoded)).then(function () {
+    function schedule() { if (!raf) raf = requestAnimationFrame(tick); }
+    function start() {
+      if (ready) return;
       ready = true;
-      render();
+      end = Math.max(video.duration - 0.05, 0);
+      shown = target = progress() * end;
+      video.currentTime = shown;
       hero.classList.add('scene-ready');
+      if (reduceMQ.matches) return;
+      video.addEventListener('seeked', schedule);
       window.addEventListener('scroll', schedule, { passive: true });
       window.addEventListener('resize', schedule);
-    }, function () {
-      staticLastFrame();
-      scrub.remove();
-    });
+    }
+    // Reduced motion: no runway, the hero rests on the clip's last frame (the player back in his ready stance).
+    if (reduceMQ.matches) pin.classList.add('no-scene');
+    video.addEventListener('loadeddata', start);
+    video.addEventListener('error', function () { pin.classList.add('no-scene'); });
+    function useSrc(src) { video.src = src; video.load(); }
+    if (window.fetch && window.URL && URL.createObjectURL) {
+      fetch(SRC).then(function (r) { if (!r.ok) throw r; return r.blob(); })
+        .then(function (b) { useSrc(URL.createObjectURL(b)); }, function () { useSrc(SRC); });
+    } else useSrc(SRC);
   })();
 
   // ---- Hero curtain: #play slides over the pinned hero; its top edge is split into columns that rise ahead of it
