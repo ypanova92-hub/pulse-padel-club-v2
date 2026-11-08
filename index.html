@@ -780,6 +780,46 @@ html{scroll-padding-top:74px}
 /* Dark sections: every frame is opaque ink, so the glyph trail shows only on the section background, never behind text. */
 .dark .help,.dark .event-feature,.dark .event-option:not([aria-pressed=true]),.dark .arrow,.dark .footer-back-top{background-color:var(--ink)}
 
+/* Events on phones: a swipeable row of full event cards (one card plus a peek of the next) replaces the feature +
+   option grid and its arrows. The row is built in JS from the same event data. */
+.event-track{display:none}
+@media(max-width:760px){
+  #events .event-controls,#events .events{display:none}
+  .event-track{display:flex;gap:14px;margin:0 -22px;padding:0 22px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding-left:22px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .event-track::-webkit-scrollbar{display:none}
+  .event-track .event-feature{flex:0 0 84%;scroll-snap-align:start;display:flex;flex-direction:column}
+  .event-track .event-body{flex:1;display:flex;flex-direction:column;align-items:flex-start}
+  .event-track .event-body .btn{margin-top:auto}
+  .event-track .media[data-zoom]{aspect-ratio:4/3}
+  /* Coaches swipe the same way (a peek of the next card), so their arrows go too. */
+  #coaches .coach-controls{display:none}
+  .coach-track{margin:0 -22px;padding:0 22px;scroll-padding-left:22px}
+}
+
+/* Find us on phones: one column of rows — label on the left, details on the right, hairlines between — with the
+   social icons on one line, right-aligned, and a full-width directions button. */
+@media(max-width:760px){
+  #contact .info{grid-template-columns:1fr;gap:0;margin-bottom:28px;border-top:1px solid #10130f33}
+  #contact .info>div{display:grid;grid-template-columns:104px minmax(0,1fr);column-gap:16px;align-items:start;padding:16px 0;border-bottom:1px solid #10130f33}
+  #contact .info>div>strong{grid-column:1;grid-row:1 / span 6;margin:0;padding-top:2px}
+  #contact .info>div>:not(strong){grid-column:2}
+  #contact .info>div>p{margin:0}
+  #contact .contact-method{margin-top:0}
+  #contact .contact-method+.contact-method{margin-top:10px}
+  #contact .social-icons{grid-column:1 / -1;flex-wrap:nowrap;justify-content:flex-end;margin-top:16px}
+  #contact .directions-button{width:100%;justify-content:space-between}
+}
+
+/* Footer on phones: the logo and "Back to top" share one row, the tagline sits under the logo. */
+@media(max-width:760px){
+  .footer-top{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;column-gap:16px;row-gap:12px}
+  .footer-top>.brand{grid-column:1;grid-row:1}
+  .footer .footer-top .actual-logo{width:clamp(120px,38vw,160px)}
+  .footer-meta{display:contents}
+  .footer-back-top{grid-column:2;grid-row:1}
+  .footer-meta .footer-kicker{grid-column:1 / -1;grid-row:2;max-width:none;text-align:left}
+}
+
 /* Glyph trail: a fixed canvas that lives inside whichever dark section the cursor is over (behind its content). */
 .glyph-trail{position:fixed;inset:0;z-index:0;width:100vw;height:100vh;pointer-events:none}
 
@@ -1143,6 +1183,31 @@ html{scroll-padding-top:74px}
     ['Club Tournament', 'FRIENDLY COMPETITION · LEVEL-BASED GROUPS', 'Put your game to the test and enjoy a day of matches with the club community.', 'Saturday, 09:00–17:00', 'event-tournament.jpg', '50% 42%', 'Doubles match during a club tournament'],
     ['Team Padel Night', 'GROUP EVENTS · COLLEAGUES & FRIENDS', 'Bring your team together for a shared experience on court. Ask us about group arrangements.', 'Date and time by arrangement', 'event-team.jpg', '50% 50%', 'A group of colleagues playing together at a team padel night']
   ];
+  // Phones: a swipeable row with every event as a full card (CSS shows it below 760px instead of the feature grid).
+  (function eventTrack() {
+    var track = document.createElement('div');
+    track.className = 'event-track';
+    track.setAttribute('aria-label', 'Events');
+    EVENTS.forEach(function (e) {
+      var card = document.createElement('article'), media = document.createElement('div'), img = document.createElement('img');
+      var body = document.createElement('div'), meta = document.createElement('div'), h = document.createElement('h3');
+      var copy = document.createElement('p'), when = document.createElement('p'), cta = document.createElement('a');
+      card.className = 'event-feature';
+      media.className = 'media'; media.setAttribute('data-zoom', '');
+      img.src = 'assets/photos/' + e[4]; img.alt = e[6]; img.loading = 'lazy'; img.decoding = 'async'; img.style.objectPosition = e[5];
+      body.className = 'event-body';
+      meta.className = 'eyebrow'; meta.textContent = e[1];
+      h.textContent = e[0];
+      copy.textContent = e[2];
+      when.className = 'small'; when.textContent = 'Example event · ' + e[3] + ' · Date and entry fee to be confirmed';
+      cta.className = 'btn'; cta.href = '#talk'; cta.dataset.topic = e[0]; cta.textContent = 'Enquire About This Event ↗';
+      media.appendChild(img);
+      [meta, h, copy, when, cta].forEach(function (n) { body.appendChild(n); });
+      card.appendChild(media); card.appendChild(body);
+      track.appendChild(card);
+    });
+    $('#events .events').insertAdjacentElement('afterend', track);
+  })();
   // Warm the cache so switching events never shows an empty frame.
   EVENTS.forEach(function (e) { new Image().src = 'assets/photos/' + e[4]; });
   var selectedEvent = 0;
@@ -1522,11 +1587,17 @@ html{scroll-padding-top:74px}
     var pin = $('.hero-pin'), sceneSpan = $('.hero-scrub-span'), video = $('.hero-video', hero), SRC = 'assets/hero/hero.mp4';
     if (!video) return;
     var ready = false, raf = 0, shown = 0, target = 0, end = 0;
+    // Phones get a still: the clip's first frame, no scroll scrubbing and no runway.
+    var phoneMQ = window.matchMedia('(max-width: 760px)');
     function clamp01(v) { return Math.min(Math.max(v, 0), 1); }
     function progress() {
+      if (phoneMQ.matches) return 0;
       var span = sceneSpan.offsetHeight;
       return span && !pin.classList.contains('no-scene') ? clamp01(-pin.getBoundingClientRect().top / span) : 1;
     }
+    function syncPhone() { pin.classList.toggle('no-scene', phoneMQ.matches || reduceMQ.matches); schedule(); }
+    if (phoneMQ.addEventListener) phoneMQ.addEventListener('change', syncPhone);
+    else if (phoneMQ.addListener) phoneMQ.addListener(syncPhone);
     function seek() {
       if (!video.seeking && Math.abs(video.currentTime - shown) > 0.004) video.currentTime = shown;
     }
@@ -1553,7 +1624,7 @@ html{scroll-padding-top:74px}
       window.addEventListener('resize', schedule);
     }
     // Reduced motion: no runway, the hero rests on the clip's last frame (the player back in his ready stance).
-    if (reduceMQ.matches) pin.classList.add('no-scene');
+    if (reduceMQ.matches || phoneMQ.matches) pin.classList.add('no-scene');
     video.addEventListener('loadeddata', start);
     video.addEventListener('error', function () { pin.classList.add('no-scene'); });
     function useSrc(src) { video.src = src; video.load(); }
