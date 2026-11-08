@@ -1392,9 +1392,12 @@ html{scroll-padding-top:74px}
 
   // ---- Nav tone on scroll
   var nav = $('.nav');
+  // The light tone is only for the full-width bar; the floating frame is always the dark glass (as over dark sections),
+  // so it reads the same over white, lime and dark backgrounds.
   function navTone() {
     var active = $$('.pulse main section').find(function (s) { var r = s.getBoundingClientRect(); return r.top <= 45 && r.bottom > 45; });
-    nav.classList.toggle('on-light', !!active && (!active.matches('.dark,.hero,#talk') || active.classList.contains('is-covered')));
+    var light = !!active && (!active.matches('.dark,.hero,#talk') || active.classList.contains('is-covered'));
+    nav.classList.toggle('on-light', light && !nav.classList.contains('is-floating'));
   }
   window.addEventListener('scroll', navTone, { passive: true });
   navTone();
@@ -1404,6 +1407,7 @@ html{scroll-padding-top:74px}
   var playSection = $('#play');
   function navFloat() {
     nav.classList.toggle('is-floating', playSection ? playSection.getBoundingClientRect().top <= 1 : window.scrollY > 24);
+    navTone();
   }
   window.addEventListener('scroll', navFloat, { passive: true });
   navFloat();
