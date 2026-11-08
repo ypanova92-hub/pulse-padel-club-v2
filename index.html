@@ -278,7 +278,7 @@ html{scroll-behavior:auto}
 :root{color-scheme:light}
 html{scroll-padding-top:85px}
 body{background:#10130f}
-.pulse{--ink:#10130f;--paper:#f3f4ed;--line:#cdd0c5;--muted:#656b60;--soft:#f3f4ed;--accent:#d2ef30;color:var(--ink);background:var(--paper);font:16px/1.55 Arial,Helvetica,sans-serif}
+.pulse{--ink:#10130f;--paper:#fff;--line:#cdd0c5;--muted:#656b60;--soft:#fff;--accent:#d2ef30;color:var(--ink);background:var(--paper);font:16px/1.55 Arial,Helvetica,sans-serif}
 .pulse h1,.pulse h2,.pulse h3,.pulse h4,.display{font-family:'Josefin Sans',Arial,sans-serif;font-weight:400;text-transform:uppercase;letter-spacing:-.025em;line-height:1.06}
 .pulse h1{font-size:clamp(72px,10.4vw,190px);max-width:none}
 .pulse h2{font-size:clamp(52px,6.6vw,116px)}
@@ -307,7 +307,7 @@ body{background:#10130f}
 .actual-logo{width:145px}
 .links{font-size:11px;gap:clamp(13px,1.8vw,34px)}
 .nav .btn{background:var(--accent);color:var(--ink);border-color:var(--accent)}
-.nav.on-light{background:#f3f4ede8;color:var(--ink)}
+.nav.on-light{background:#ffffffe8;color:var(--ink)}
 .nav.on-light .btn{background:var(--ink);color:var(--paper);border-color:var(--ink)}
 .hero{min-height:100svh;background:#29302b;align-items:flex-end;isolation:isolate}
 .hero:before{background:linear-gradient(0deg,#10130ff2 0%,#10130f45 65%,#10130f88);z-index:-1}
@@ -413,7 +413,7 @@ body{background:#10130f}
 .pulse .faq-btn{min-width:230px;font-size:13px}
 .faq-list{gap:0;border-top:1px solid var(--line)}
 .pulse .faq-list details{border:0;border-bottom:1px solid var(--line);background:transparent}
-.pulse .faq-list details[open]{background:#e7eadd}
+.pulse .faq-list details[open]{background:#f4f5f2}
 .pulse summary{padding:27px 22px;font:clamp(21px,2vw,30px)/1.2 'Josefin Sans',Arial,sans-serif;text-transform:uppercase;letter-spacing:0}
 .pulse details p{font-size:15px;padding:0 22px 28px}
 #club{background:var(--accent)}
@@ -506,7 +506,7 @@ html{scroll-padding-top:74px}
 .rate-card{border:1px solid var(--line);background:var(--paper)}
 .rate-card.peak{margin:0;border-color:#1d231a}
 .extras{gap:24px;border:0}
-.extras-card,.extras-card+.extras-card{padding:30px 32px;border:1px solid var(--line);background:#e9ecdf}
+.extras-card,.extras-card+.extras-card{padding:30px 32px;border:1px solid var(--line);background:#f4f5f2}
 .pulse .faq-intro{margin-top:36px}
 .faq-grid>*{min-width:0}
 #coaches .card .btn{background:var(--accent);color:var(--ink);border-color:var(--accent)}
@@ -684,7 +684,7 @@ html{scroll-padding-top:74px}
 .nav.is-floating:before{opacity:0}
 .nav.is-floating .nav-inner{top:11px;height:64px;margin:0 2vw;padding:10px 10px 10px 24px}
 .nav.is-floating .nav-inner:before{opacity:1}
-.nav.is-floating.on-light .nav-inner:before{background:linear-gradient(180deg,#ffffffa6,#ffffff00 50%),#f3f4edb3;border-color:#10130f1c;box-shadow:inset 0 1px #ffffffd9,inset 0 -1px #10130f0d,0 16px 44px #10130f26}
+.nav.is-floating.on-light .nav-inner:before{background:linear-gradient(180deg,#ffffffa6,#ffffff00 50%),#ffffffb3;border-color:#10130f1c;box-shadow:inset 0 1px #ffffffd9,inset 0 -1px #10130f0d,0 16px 44px #10130f26}
 /* Chromium can refract the backdrop through an SVG displacement map (built in JS); other browsers keep the plain blur. */
 .has-liquid-glass .nav-inner:before{-webkit-backdrop-filter:url(#pulse-glass) blur(2px) saturate(1.8) brightness(1.04);backdrop-filter:url(#pulse-glass) blur(2px) saturate(1.8) brightness(1.04)}
 .has-liquid-glass .nav.on-light .nav-inner:before{-webkit-backdrop-filter:url(#pulse-glass) blur(5px) saturate(1.6) brightness(1.03);backdrop-filter:url(#pulse-glass) blur(5px) saturate(1.6) brightness(1.03)}
@@ -785,6 +785,8 @@ html{scroll-padding-top:74px}
 .event-track{display:none}
 @media(max-width:760px){
   #events .event-controls,#events .events{display:none}
+  /* The head stacks into a column here, so the desktop flex-basis (260px) would turn into a 260px height. */
+  #events .head>div:first-child{flex:0 0 auto}
   .event-track{display:flex;gap:14px;margin:0 -22px;padding:0 22px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding-left:22px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
   .event-track::-webkit-scrollbar{display:none}
   .event-track .event-feature{flex:0 0 84%;scroll-snap-align:start;display:flex;flex-direction:column}
@@ -945,7 +947,6 @@ html{scroll-padding-top:74px}
 <article class="rate-card peak"><div class="rate-title"><h3>Peak Court</h3><span class="popular">POPULAR</span></div><p class="rate-time">Weekdays 16:00 – 24:00 &amp; all weekends</p><div class="rate-number"><span class="rate-price" id="peak-price">£24</span><span class="rate-unit" data-rate-unit>/ player (4 players)</span></div><p class="rate-total" id="peak-total">Total court: £96 for 90 min</p><ul class="rate-features"><li>One court · bring your favourite people</li><li>Evenings and weekends, ready for your game</li><li>Split payments with your group in Playtomic</li></ul><button class="btn" type="button" data-book-rate="peak">Book Peak on Playtomic ↗</button></article>
 </div>
 <p class="split-note"><strong>Share the game. Split the price.</strong> Choose two or four players to see each person’s share. The total court price stays the same; split it equally with your group.</p>
-<p class="rate-disclaimer">WIREFRAME EXAMPLE · Rates and time bands are illustrative, to be confirmed. Playtomic links will be connected before launch.</p>
 <div class="extras"><div class="extras-card"><h3 class="extras-title">Equipment Rental</h3><ul class="extras-list"><li><span>Premium Racket Rental (Bullpadel / Nox)</span><strong>£5 / match</strong></li><li><span>Can of 3 Pro Padel Balls (To keep)</span><strong>£8 / can</strong></li><li><span>Overgrip Replacement</span><strong>£4</strong></li></ul></div><div class="extras-card"><h3 class="extras-title">Included 100% Free</h3><ul class="extras-list"><li><span>Hot showers &amp; fresh towel service</span><strong>FREE</strong></li><li><span>Keycode security lockers</span><strong>FREE</strong></li><li><span>Dedicated on-site shaded parking</span><strong>FREE</strong></li></ul></div></div>
 </div></section>
 
